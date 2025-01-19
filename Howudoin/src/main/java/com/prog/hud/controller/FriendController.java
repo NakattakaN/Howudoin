@@ -56,6 +56,10 @@ public class FriendController {
         Friendreq friendreq = doesreq_exist(reciver.username);
         if(friendreq != null && !friendreq.isRequest_status()) {
             userinfo sender = friendreq.getSending_user();
+            sender = this.userController.userfinderbyusername(sender.getUsername());
+            reciver = this.userController.userfinderbyusername(reciver.getUsername());
+            ArrayList<String> reci = reciver.getFriends();
+            ArrayList<String> sent = sender.getFriends();
             this.userservice.deleteuser(reciver);
             this.userservice.deleteuser(sender);
             this.friendservice.deletereq(friendreq);
@@ -65,8 +69,6 @@ public class FriendController {
             String message = friendreq.getMessage();
             System.out.println(message);
             friendreq.setRequest_status(true);
-            ArrayList<String> reci = reciver.getFriends();
-            ArrayList<String> sent = sender.getFriends();
 
             reci.add(sender.getUsername());
             sent.add(reciver.getUsername());
@@ -85,39 +87,50 @@ public class FriendController {
         }
         else {
             System.out.println("No request sended for this user ):");
+            return false;
         }
-        return false;
+        return true;
+    }
+
+    @GetMapping("/friendreqlist")
+    public List<Friendreq> isitreal(@RequestHeader String sendertoken) {
+        jwt token = new jwt();
+        Claims claim = jwt.validateToken(sendertoken);
+        userinfo reciver = jwt.claimsToUserinfo(claim);
+        List<Friendreq> friend_istek_list = this.friendservice.frienreqlist();
+        List<Friendreq> friend_list = new ArrayList<>();
+        for(int i=0; i<friend_istek_list.size(); i++) {
+            if(Objects.equals(friend_istek_list.get(i).getReceiving_user().getUsername(), reciver.getUsername()) && !friend_istek_list.get(i).isRequest_status()) {
+                friend_list.add(friend_istek_list.get(i));
+                friend_istek_list.remove(i);
+            }
+        }
+        return friend_list;
     }
 
 
-    public Friendreq doesreq_exist(@PathVariable String reciver) {
+    public Friendreq doesreq_exist(String Username) {
         List<Friendreq> friend_istek_list = friendservice.frienreqlist();
         for(int i=0; i<friend_istek_list.size(); i++) {
-            if(Objects.equals(friend_istek_list.get(i).getReceiving_user().username, reciver)) {
+            if(Objects.equals(friend_istek_list.get(i).getReceiving_user().username, Username)) {
                 return friend_istek_list.get(i);
             }
         }
         return null;
     }
-
-
-    public boolean requestexists(Friendreq friendreq) {
-        List<Friendreq> istekler = this.friendservice.frienreqlist();
-        for(int i=0; i<istekler.size(); i++) {
-            if(istekler.get(i) == friendreq) {
-                return true;
-            }
-            else{
-                System.out.println(istekler.get(i));
-            }
-        }
-        return false;
-    }
     @GetMapping("/friend")
     public ArrayList<String> friendlist(@RequestHeader String sendertoken) {
+        UserService userService = new UserService();
         jwt token = new jwt();
         Claims claim = jwt.validateToken(sendertoken);
         userinfo sender = jwt.claimsToUserinfo(claim);
+        List<userinfo> elma = userservice.getAlluser();
+        for (int i = 0; i < elma.size(); i++) {
+            if (elma.get(i).getUsername().equals(sender.getUsername())) {
+                System.out.println("User found");
+                sender = elma.get(i);
+            }
+        }
         if(sender != null) {
             System.out.println(sender.getUsername());
             return sender.getFriends();

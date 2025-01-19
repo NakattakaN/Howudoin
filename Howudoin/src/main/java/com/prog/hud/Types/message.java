@@ -21,6 +21,16 @@ public class message {
         this.status = "Not read";
         this.messageid = messageid;
     }
+    public message(String message, String sender) {
+        userinfo newuser = new userinfo(sender,"");
+        this.sender = newuser;
+        this.message = message;
+        this.receiver = new userinfo("","");
+        this.status = "Not read";
+        this.messageid = "";
+    }
+
+
     public message() {}
 
     public message(String message) {

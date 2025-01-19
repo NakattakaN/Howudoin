@@ -38,7 +38,11 @@ public class MessageController {
         }
         if(reveiver != null && elma) {
             String id = sender.username + reciver;
-            message Message = new message(sender,reveiver,message,id);
+            userinfo securesender = sender;
+            securesender.setPassword("ben aslında yoğum");
+            userinfo securereveiver = reveiver;
+            securereveiver.setPassword("ben aslında yoğum");
+            message Message = new message(securesender,securereveiver,message,id);
             messageService.savemessage(Message);
         }
         else{
@@ -48,17 +52,17 @@ public class MessageController {
     }
 
     @GetMapping("/message")
-    public List<String> messagelog(@RequestHeader String sendertoken) {
+    public List<message> messagelog(@RequestHeader String sendertoken) {
         jwt token = new jwt();
         Claims claim = jwt.validateToken(sendertoken);
         userinfo user = jwt.claimsToUserinfo(claim);
         userController.signin(user);
         List<message> messages;
-        List<String> actualmessages = new ArrayList<>();
+        List<message> actualmessages = new ArrayList<>();
         messages= messageService.getAllmessage();
         for(int i=0 ; i<messages.size();i++){
             if(Objects.equals(messages.get(i).getSender().getUsername(), user.getUsername()) || Objects.equals(messages.get(i).getReceiver().getUsername(), user.getUsername())) {
-                actualmessages.add(messages.get(i).message);
+                actualmessages.add(messages.get(i));
             }
         }
         return actualmessages;

@@ -1,6 +1,7 @@
 package com.prog.hud.Types;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.LocalDateTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,15 +17,19 @@ public class group {
     public group() {}
 
     public group(int groupid, String groupname) {
+        LocalDateTime samet = LocalDateTime.now();
         this.groupid = groupid;
         this.groupname = groupname;
-        this.groupdesc = "";
+        this.groupdesc = samet.toString();
         users = new ArrayList<userinfo>();
         messages = new ArrayList<message>();
     }
-    public void addmessage(String messa) {
-        message mesage1 = new message(messa);
-        messages.add(mesage1);
+    public void addmessage(String messa,userinfo sender) {
+        message mesage1 = new message(messa,sender.username);
+        mesage1.setSender(sender);
+        mesage1.sender.setPassword("");
+        mesage1.receiver.setPassword("");
+        this.messages.add(mesage1);
     }
     public void adduser(userinfo user) {
         if (user != null) {
